@@ -1,0 +1,71 @@
+# LibreChat Configuration
+# For more information, see: https://www.librechat.ai/docs/configuration/librechat_yaml
+
+# Configuration version (required)
+version: 1.2.1
+
+# Cache settings: Set to true to enable caching
+cache: true
+
+# Custom interface configuration
+interface:
+  customWelcome: 'Welcome to LibreChat! Your AI assistant with MCP server support.'
+
+# MCP (Model Context Protocol) Servers Configuration
+# These servers provide additional tools and capabilities to your AI models
+mcpServers:
+  # Intel GAAS Playwright via LiteLLM MCP Gateway
+  deepwiki:
+    type: http
+    url: "http://litellm:4000/mcp/deepwiki"  # Correct LiteLLM MCP URL format
+    timeout: 300000  # 5 minutes timeout
+    headers:
+      Authorization: "Bearer sk-1234"
+  playwright:
+    type: http
+    url: "http://litellm:4000/mcp/playwright"
+    timeout: 30000
+    headers:
+      Authorization: "Bearer sk-1234"
+
+# Actions configuration (for external API calls)
+# actions:
+#   allowedDomains:
+#     - 'api.github.com'
+#     - 'httpbin.org'
+#     - 'jsonplaceholder.typicode.com'
+#     - 'swapi.dev'
+#     - 'librechat.ai'
+
+# Definition of custom endpoints
+endpoints:
+  # OpenAI endpoint configuration
+  openAI:
+    titleConvo: true
+    titleModel: "gpt-4o-mini"
+    summarize: false
+    summaryModel: "gpt-4o-mini"
+    forcePrompt: false
+    modelDisplayLabel: "OpenAI"
+    # Enable MCP servers for this endpoint
+    mcpServers:
+      - deepwiki  # LiteLLM MCP Tools Proxy
+
+    # Add new LiteLLM endpoint
+  custom:
+    - name: "LiteLLM Proxy"
+      apiKey: "sk-1234" # Must match master_key in litellm config
+      baseURL: "http://litellm:4000/v1"  # Use container name for internal Docker networking
+      models:
+        default: ["gpt-4o", "gpt-3.5-turbo", "gpt-4-turbo"]
+        fetch: true
+      titleConvo: true
+      titleModel: "gpt-3.5-turbo"
+      summarize: false
+      summaryModel: "gpt-3.5-turbo"
+      forcePrompt: false
+      modelDisplayLabel: "LiteLLM"
+      # LiteLLM MCP tools are available through the proxy
+      mcpServers:
+        - deepwiki
+        - playwright
